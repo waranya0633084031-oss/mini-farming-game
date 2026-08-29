@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Little Farm — Farm & Trade</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#477b43;--green2:#72a85a;--light:#eff9df;--cream:#fffaf0;
+  --gold:#d29c25;--brown:#9a704d;--red:#df6961;--shadow:0 10px 25px rgba(54,87,44,.14)
+}
+body{margin:0;min-height:100vh;font-family:Arial,Tahoma,sans-serif;color:#365a35;
+background:linear-gradient(145deg,#e8f9d7,#c9eeb0 50%,#a9db92);overflow-x:hidden}
+button{font:inherit}
+.app{width:min(1120px,94vw);margin:auto;padding:20px 0 35px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.logo h1{margin:0;color:#3d7038;font-size:clamp(25px,4vw,38px)}
+.logo p{margin:4px 0 0;color:#668160;font-size:13px}
+.top-actions{display:flex;gap:8px;align-items:center}
+.money{background:#fffdf5;border-radius:18px;padding:9px 15px;box-shadow:var(--shadow);font-weight:900;color:#ae7c13;font-size:20px}
+.icon-btn,.restart{border:0;border-radius:14px;background:#fff;padding:10px 13px;cursor:pointer;box-shadow:var(--shadow);color:#55754e;font-weight:800}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:18px}
+.card{background:rgba(255,255,255,.82);border-radius:24px;box-shadow:var(--shadow);padding:17px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#f6fbe9;border-radius:14px;padding:9px;text-align:center}
+.stat b{display:block;font-size:18px;color:#4d7d45}.stat span{font-size:11px;color:#7a9273}
+.garden-card{background:#82b965;border:6px solid #6da453}
+.garden{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.plot{border:3px solid #ae8058;border-radius:15px;aspect-ratio:1;background:#d8ad7d;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;font-size:clamp(28px,6vw,50px);touch-action:manipulation;transition:.12s;box-shadow:inset 0 5px 8px #9c704d22}
+.plot:hover{transform:scale(1.025)}
+.plot.ready{background:#dff2bd;border-color:#79aa58;animation:pulse 1s infinite alternate}
+.plot.watered{outline:3px solid #75c4e7}
+.plot .tag{position:absolute;top:5px;right:5px;font-size:11px;background:#fff9;padding:2px 5px;border-radius:8px}
+.plot .bar{position:absolute;bottom:5px;left:8px;right:8px;height:5px;background:#ffffff66;border-radius:10px;overflow:hidden}
+.plot .fill{height:100%;background:#4d9948;border-radius:10px}
+.section-title{font-weight:900;margin:0 0 10px;color:#4c7346}
+.seeds{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:13px}
+.seed{border:3px solid transparent;border-radius:17px;background:#fff;padding:10px 6px;cursor:pointer;box-shadow:0 5px 13px #4b703322}
+.seed.selected{border-color:#e0ad29;background:#fffdf0;box-shadow:0 0 0 3px #e0ad2930}
+.seed:disabled{opacity:.35;cursor:not-allowed}
+.seed .big{font-size:31px}.seed b{display:block}.seed small{display:block;color:#7b9175;margin-top:3px}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.action{border:0;border-radius:14px;background:#f1f8e7;padding:11px 5px;cursor:pointer;color:#4d7148;font-weight:800}
+.action:hover{background:#e4f2d4}.action:disabled{opacity:.4;cursor:not-allowed}
+.market{display:grid;gap:9px}
+.order,.province,.event{border-radius:16px;background:#f7fbeF;padding:11px}
+.order{border-left:5px solid #d7a43b}.province{border-left:5px solid #6ba85a}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:11px;border-radius:10px;padding:4px 7px;background:#e8f2df}
+.order b,.province b{color:#4d7546}
+.mini{font-size:12px;color:#788f72;line-height:1.5}
+.primary{border:0;border-radius:12px;background:#69a653;color:#fff;padding:8px 11px;font-weight:800;cursor:pointer}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.tab{border:0;border-radius:12px;background:#edf5e5;padding:9px;cursor:pointer;color:#56734f;font-weight:800}
+.tab.active{background:#6ba653;color:#fff}
+.panel{display:none}.panel.active{display:block}
+.message{margin:12px 0 0;min-height:26px;text-align:center;font-weight:800;color:#547a4d}
+.advisor{margin-top:14px;background:linear-gradient(135deg,#fff8df,#f4f9df);border:2px solid #ead99a}
+.advisor .robot{font-size:25px;float:left;margin-right:8px}
+.modal{position:fixed;inset:0;background:#24432988;display:none;align-items:center;justify-content:center;padding:18px;z-index:20}
+.modal.show{display:flex}
+.modal-box{width:min(600px,100%);max-height:88vh;overflow:auto;background:#fffdf5;border-radius:25px;padding:20px;box-shadow:0 20px 50px #0003}
+.modal-box h2{margin-top:0;color:#4d773f}
+.close{float:right;border:0;background:#edf4e6;border-radius:10px;padding:7px 11px;cursor:pointer}
+.product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.product{background:#f1f7e9;border-radius:15px;padding:12px;text-align:center}
+.product button{margin-top:8px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#355d35;color:white;padding:11px 16px;border-radius:14px;opacity:0;pointer-events:none;transition:.25s;z-index:30;font-weight:700;box-shadow:0 8px 20px #0003}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes pulse{from{box-shadow:0 0 0 0 #e5b33100}to{box-shadow:0 0 0 5px #e5b33133}}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.top{align-items:flex-start}.stats{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:520px){
+ .app{width:96vw;padding-top:12px}.logo p{font-size:11px}.money{font-size:17px;padding:8px 10px}.restart{font-size:12px}
+ .garden-card{padding:10px;border-width:4px}.garden{gap:5px}.plot{border-width:2px;border-radius:11px}
+ .stats{gap:5px}.stat{padding:7px 2px}.stat b{font-size:15px}.stat span{font-size:9px}
+ .seeds{gap:5px}.seed{border-radius:14px;padding:8px 3px}.seed .big{font-size:27px}.seed b{font-size:13px}.seed small{font-size:9px}
+ .actions{gap:5px}.action{font-size:12px;padding:10px 2px}.card{padding:13px;border-radius:20px}
+ .product-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo">
+      <h1>🌾 Little Farm</h1>
+      <p>จากสวนเล็ก ๆ สู่ธุรกิจฟาร์มระดับประเทศ 🚚</p>
+    </div>
+    <div class="top-actions">
+      <div class="money" id="money">฿50</div>
+      <button class="restart" id="restart">🔄 เริ่มใหม่</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section>
+      <div class="stats">
+        <div class="stat"><b id="level">Lv.1</b><span>ระดับฟาร์ม</span></div>
+        <div class="stat"><b id="xp">0/100</b><span>EXP</span></div>
+        <div class="stat"><b id="day">วันที่ 1</b><span>ฤดูกาล</span></div>
+        <div class="stat"><b id="reputation">⭐ 0</b><span>ชื่อเสียง</span></div>
+      </div>
+
+      <div class="card garden-card">
+        <div class="row" style="color:white;margin-bottom:10px">
+          <strong>🌱 แปลงผักของฉัน</strong>
+          <span id="weather">☀️ อากาศดี</span>
+        </div>
+        <div class="garden" id="garden"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="section-title">🌱 เมล็ดพันธุ์</div>
+        <div class="seeds" id="seeds"></div>
+        <div class="actions">
+          <button class="action" id="waterAll">💧 รดน้ำทั้งหมด</button>
+          <button class="action" id="processBtn">🏭 แปรรูป</button>
+          <button class="action" id="mapBtn">🗺️ ตลาดจังหวัด</button>
+        </div>
+        <div class="message" id="message">เลือกเมล็ดแล้วคลิกแปลงว่างเพื่อปลูก!</div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <div class="tabs">
+          <button class="tab active" data-tab="orders">📋 ออเดอร์</button>
+          <button class="tab" data-tab="market">📈 ตลาด</button>
+          <button class="tab" data-tab="goals">🏆 ภารกิจ</button>
+        </div>
+
+        <div class="panel active" id="orders">
+          <div class="panel-title"><h3 style="margin:0">📦 ออเดอร์วันนี้</h3><span class="badge" id="orderTimer">--</span></div>
+          <div id="ordersList"></div>
+        </div>
+
+        <div class="panel" id="market">
+          <div class="panel-title"><h3 style="margin:0">📈 ราคาตลาด</h3><span class="badge">เปลี่ยนทุกวัน</span></div>
+          <div class="market" id="marketList"></div>
+        </div>
+
+        <div class="panel" id="goals">
+          <div class="panel-title"><h3 style="margin:0">🏆 ภารกิจ</h3></div>
+          <div id="goalsList"></div>
+        </div>
+      </div>
+
+      <div class="card advisor">
+        <span class="robot">🤖</span>
+        <b>Farmy — ผู้ช่วยฟาร์ม</b>
+        <div class="mini" id="advice">กำลังวิเคราะห์ตลาด...</div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="section-title">📊 สถิติการค้า</div>
+        <div class="mini" id="tradeStats"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <button class="close" id="closeModal">✕</button>
+    <h2 id="modalTitle">ตลาด</h2>
+    <div id="modalContent"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const crops={
+ carrot:{name:"แครอท",icon:"🥕",cost:5,base:10,growName:"โตเร็ว"},
+ tomato:{name:"มะเขือเทศ",icon:"🍅",cost:10,base:25,growName:"โตปานกลาง"},
+ lettuce:{name:"ผักกาด",icon:"🥬",cost:15,base:40,growName:"โตช้า"}
+};
+const provinces=[
+ {name:"กรุงเทพฯ",icon:"🏙️",need:"tomato",qty:5,reward:190},
+ {name:"เชียงใหม่",icon:"🌄",need:"carrot",qty:8,reward:150},
+ {name:"ขอนแก่น",icon:"🌾",need:"lettuce",qty:6,reward:280},
+ {name:"ภูเก็ต",icon:"🏖️",need:"lettuce",qty:10,reward:500}
+];
+const products=[
+ {name:"🧃 น้ำแครอท",need:"carrot",qty:3,cost:8,sell:35},
+ {name:"🍅 ซอสมะเขือเทศ",need:"tomato",qty:3,cost:18,sell:70},
+ {name:"🥗 สลัดผัก",need:"lettuce",qty:3,cost:25,sell:100}
+];
+let money=50,level=1,xp=0,reputation=0,day=1,selected="carrot";
+let plots=Array(25).fill(null), inventory={carrot:0,tomato:0,lettuce:0}, processed=0,exports=0,harvests=0;
+let marketPrices={},orders=[],weather="☀️ อากาศดี",dayTicks=0,orderTick=0;
+
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function makePrices(){
+ Object.keys(crops).forEach(k=>marketPrices[k]=Math.max(3, crops[k].base+rand(-4,8)));
+}
+function makeOrders(){
+ orders=[
+  {need:"tomato",qty:rand(2,5),reward:rand(80,170),time:30},
+  {need:["carrot","lettuce","tomato"][rand(0,2)],qty:rand(3,7),reward:rand(100,250),time:45}
+ ];
+}
+function render(){
+ document.getElementById("money").textContent="฿"+money;
+ document.getElementById("level").textContent="Lv."+level;
+ document.getElementById("xp").textContent=xp+"/"+(level*100);
+ document.getElementById("day").textContent="วันที่ "+day;
+ document.getElementById("reputation").textContent="⭐ "+reputation;
+ document.getElementById("weather").textContent=weather;
+ renderGarden();renderSeeds();renderOrders();renderMarket();renderGoals();renderStats();updateAdvice();
+}
+function renderGarden(){
+ const el=document.getElementById("garden");el.innerHTML="";
+ plots.forEach((p,i)=>{
+  const b=document.createElement("button");
+  b.className="plot "+(!p?"":"ready".replace("ready",p.stage===3?"ready":""))+(p?.watered?" watered":"");
+  if(!p)b.innerHTML="🟫";
+  else{
+   const c=crops[p.type], icon=p.stage===1?"🌱":p.stage===2?"🌿":c.icon;
+   b.innerHTML=`${icon}${p.watered?'<span class="tag">💧</span>':""}<span class="bar"><span class="fill" style="width:${p.stage/3*100}%"></span></span>`;
+  }
+  b.onclick=()=>plotClick(i);el.appendChild(b);
+ });
+}
+function renderSeeds(){
+ const el=document.getElementById("seeds");el.innerHTML="";
+ Object.entries(crops).forEach(([k,c])=>{
+  const b=document.createElement("button");b.className="seed "+(selected===k?"selected":"");b.disabled=money<c.cost;
+  b.innerHTML=`<span class="big">${c.icon}</span><b>${c.name}</b><small>เมล็ด ฿${c.cost} • ขาย ~฿${marketPrices[k]}</small><small>${c.growName}</small>`;
+  b.onclick=()=>{selected=k;msg("เลือก"+c.name+"แล้ว 🌱");render()};el.appendChild(b);
+ });
+}
+function plotClick(i){
+ const p=plots[i];
+ if(!p){
+  const c=crops[selected];
+  if(money<c.cost)return msg("เงินไม่พอซื้อเมล็ดนี้ 😅");
+  money-=c.cost;plots[i]={type:selected,stage:1,watered:false};msg("ปลูก"+c.name+"แล้ว! 💧 รดน้ำเพื่อเร่งการโต");render();return;
+ }
+ if(p.stage===3){
+  const c=crops[p.type],price=marketPrices[p.type];
+  const quality=Math.random()<.22?"premium":"normal";
+  const earn=quality==="premium"?Math.round(price*1.5):price;
+  money+=earn;inventory[p.type]++;harvests++;addXP(12);plots[i]=null;
+  msg(`เก็บ${c.name}คุณภาพ${quality==="premium"?"Premium ⭐":"ปกติ"} +฿${earn}`);render();
+ }else msg("ผักยังไม่โตเต็มที่ 🌿");
+}
+function grow(){
+ let changed=false;
+ plots.forEach(p=>{
+  if(p&&p.stage<3){
+   let chance=weather.includes("ฝน")?1:1;
+   if(p.watered||weather.includes("ฝน"))chance=2;
+   if(Math.random()<chance){p.stage++;changed=true}
+   p.watered=false;
+  }
+ });
+ if(changed)render();
+}
+function waterAll(){
+ let count=0;plots.forEach(p=>{if(p&&p.stage<3){p.watered=true;count++}});
+ msg(count?`รดน้ำผัก ${count} ช่อง 💧`: "ยังไม่มีผักที่ต้องรดน้ำ");
+ render();
+}
+function processMenu(){
+ openModal("🏭 โรงแปรรูป",`<p class="mini">ใช้ผักที่เก็บได้มาแปรรูปเป็นสินค้ามูลค่าสูง</p><div class="product-grid">${products.map((p,i)=>`<div class="product"><div style="font-size:30px">${p.name.split(" ")[0]}</div><b>${p.name.substring(p.name.indexOf(" ")+1)}</b><div class="mini">${crops[p.need].name} ×${p.qty}<br>ค่าแปรรูป ฿${p.cost}<br>ขายได้ ฿${p.sell}</div><button class="primary" onclick="processProduct(${i})">ผลิต</button></div>`).join("")}</div>`);
+}
+function processProduct(i){
+ const p=products[i];
+ if(inventory[p.need]<p.qty||money<p.cost)return msg("วัตถุดิบหรือเงินไม่พอสำหรับแปรรูป");
+ inventory[p.need]-=p.qty;money-=p.cost;money+=p.sell;processed++;addXP(25);msg(`ผลิต${p.name}สำเร็จ! กำไรสุทธิ ฿${p.sell-p.cost} 🏭`);closeModal();render();
+}
+function mapMenu(){
+ openModal("🚚 ตลาดต่างจังหวัด",`<p class="mini">ส่งสินค้าให้จังหวัดที่กำลังต้องการของคุณ</p>${provinces.map((p,i)=>`<div class="province" style="margin-bottom:8px"><div class="row"><b>${p.icon} ${p.name}</b><span class="badge">รางวัล ฿${p.reward}</span></div><div class="mini">ต้องการ ${crops[p.need].icon} ${crops[p.need].name} ×${p.qty}</div><button class="primary" style="margin-top:7px" onclick="exportProvince(${i})">🚚 ส่งสินค้า</button></div>`).join("")}`);
+}
+function exportProvince(i){
+ const p=provinces[i];
+ if(inventory[p.need]<p.qty)return msg("สินค้าในคลังไม่พอสำหรับออเดอร์นี้ 📦");
+ inventory[p.need]-=p.qty;money+=p.reward;exports++;reputation++;addXP(40);
+ msg(`ส่งสินค้าไป${p.name}สำเร็จ! +฿${p.reward} 🚚`);closeModal();render();
+}
+function renderOrders(){
+ const el=document.getElementById("ordersList");
+ el.innerHTML=orders.map((o,i)=>`<div class="order" style="margin-bottom:8px"><div class="row"><b>🏪 ${o.need==="tomato"?"ร้านอาหารกรุงเทพฯ":"ตลาดท้องถิ่น"}</b><span class="badge">⏳ ${o.time}s</span></div><div class="mini">${crops[o.need].icon} ${crops[o.need].name} ×${o.qty} • 💰 ฿${o.reward}</div><button class="primary" style="margin-top:7px" onclick="fulfill(${i})">📦 ส่งออเดอร์</button></div>`).join("");
+ document.getElementById("orderTimer").textContent=orders.length?orders[0].time+"s":"ไม่มีออเดอร์";
+}
+function fulfill(i){
+ const o=orders[i];
+ if(inventory[o.need]<o.qty)return msg("ของในคลังไม่พอ 📦");
+ inventory[o.need]-=o.qty;money+=o.reward;reputation++;addXP(30);orders.splice(i,1);
+ msg("ส่งออเดอร์สำเร็จ! ลูกค้าประทับใจ ⭐");render();
+}
+function renderMarket(){
+ document.getElementById("marketList").innerHTML=Object.entries(crops).map(([k,c])=>`<div class="order"><div class="row"><b>${c.icon} ${c.name}</b><strong style="color:#b37d12">฿${marketPrices[k]}</strong></div><div class="mini">เมล็ด ฿${c.cost} • กำไรพื้นฐาน ฿${marketPrices[k]-c.cost}</div></div>`).join("");
+}
+function renderGoals(){
+ const goals=[
+  ["🌱 First Harvest",harvests,1,"เก็บผักครั้งแรก",100],
+  ["📦 Trader",exports,3,"ส่งสินค้า 3 ครั้ง",250],
+  ["🏭 Food Factory",processed,3,"แปรรูปสินค้า 3 ครั้ง",300],
+  ["💰 Rich Farmer",money,1000,"มีเงินถึง ฿1,000",500]
+ ];
+ document.getElementById("goalsList").innerHTML=goals.map(g=>`<div class="order" style="margin-bottom:7px"><div class="row"><b>${g[0]}</b><span class="badge">${Math.min(g[1],g[2])}/${g[2]}</span></div><div class="mini">${g[3]} • รางวัล ฿${g[4]}</div></div>`).join("");
+}
+function renderStats(){
+ document.getElementById("tradeStats").innerHTML=`🥕 ในคลัง: ${inventory.carrot} &nbsp; 🍅 ${inventory.tomato} &nbsp; 🥬 ${inventory.lettuce}<br><br>🌾 เก็บเกี่ยว ${harvests} ครั้ง • 🏭 แปรรูป ${processed} ครั้ง • 🚚 ส่งออก ${exports} ครั้ง`;
+}
+function updateAdvice(){
+ let best=Object.entries(marketPrices).sort((a,b)=>b[1]-b[1])[0];
+ let bestKey=Object.entries(marketPrices).sort((a,b)=>b[1]-b[1])[0]?.[0]||"carrot";
+ let province=provinces.find(p=>p.need===bestKey);
+ document.getElementById("advice").textContent=`วันนี้ ${crops[bestKey].icon} ${crops[bestKey].name} ราคาดีที่สุดที่ ฿${marketPrices[bestKey]}! ${province?"ลองส่งไป"+province.name+"เมื่อมีของครบ "+province.qty+" ชิ้น 🚚":"เก็บไว้ขายตอนราคาดีได้เลย"}`;
+}
+function addXP(n){
+ xp+=n;
+ while(xp>=level*100){xp-=level*100;level++;money+=level*80;reputation++;msg(`🎉 เลเวลอัป! ตอนนี้เป็น Lv.${level} ได้โบนัส ฿${level*80}`)}
+}
+function nextDay(){
+ day++;dayTicks=0;makePrices();
+ weather=["☀️ อากาศดี","🌧️ ฝนตก","☁️ เมฆมาก","🌤️ แดดอ่อน"][rand(0,3)];
+ makeOrders();orders.forEach(o=>o.time+=0);
+ msg(`🌅 วันที่ ${day} เริ่มแล้ว! ตลาดเปลี่ยนราคา`);
+ render();
+}
+function tick(){
+ grow();dayTicks++;orderTick++;
+ orders.forEach(o=>o.time--);orders=orders.filter(o=>o.time>0);
+ if(orderTick>=1){orderTick=0;if(orders.length<2)orders.push({need:["carrot","tomato","lettuce"][rand(0,2)],qty:rand(2,5),reward:rand(70,180),time:45})}
+ if(dayTicks>=30)nextDay();else render();
+}
+function msg(t){document.getElementById("message").textContent=t;toast(t)}
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>e.classList.remove("show"),1800)}
+function openModal(title,content){document.getElementById("modalTitle").textContent=title;document.getElementById("modalContent").innerHTML=content;document.getElementById("modal").classList.add("show")}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+document.getElementById("waterAll").onclick=waterAll;
+document.getElementById("processBtn").onclick=processMenu;
+document.getElementById("mapBtn").onclick=mapMenu;
+document.getElementById("closeModal").onclick=closeModal;
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")closeModal()};
+document.getElementById("restart").onclick=()=>{
+ if(confirm("เริ่มเกมใหม่? เงินและความคืบหน้าทั้งหมดจะถูกรีเซ็ต")){
+  money=50;level=1;xp=0;reputation=0;day=1;selected="carrot";plots=Array(25).fill(null);
+  inventory={carrot:0,tomato:0,lettuce:0};processed=0;exports=0;harvests=0;dayTicks=0;makePrices();makeOrders();msg("เริ่มเกมใหม่แล้ว! 🌱");render();
+ }
+};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+ t.classList.add("active");document.getElementById(t.dataset.tab).classList.add("active");
+});
+makePrices();makeOrders();render();
+setInterval(tick,2000);
+</script>
+</body>
+</html>
